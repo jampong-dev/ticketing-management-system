@@ -4,7 +4,7 @@ const User = require('../../models/User');
 
 
 const createTicket = async (req, res) => {
-  const { title, description, priority, status, created_by, assigned_to } = req.body;   
+  const { title, description, priority, status, created_by } = req.body;   
     try { 
         const ticketNumber = `TICKET-${Date.now()}`;
         const ticket = await Ticket.create({
@@ -13,8 +13,7 @@ const createTicket = async (req, res) => {
             description,
             priority,
             status,
-            created_by,
-            assigned_to
+            created_by
         });
 
         const creator = await Ticket.findByPk(ticket.id, {
@@ -34,7 +33,6 @@ const getAllTickets = async (req, res) => {
         limit = 10,
         status, 
         priority, 
-        assigned_to,
         search,
         sort_by = 'created_at',
         sort_order = 'DESC' 
@@ -47,8 +45,7 @@ const getAllTickets = async (req, res) => {
         const whereClause = {};
         if (status) whereClause.status = status;
         if (priority) whereClause.priority = priority;
-        if (assigned_to) whereClause.assigned_to = assigned_to;
-
+    
         if (search) {
             whereClause[Op.or] = [
                 { title: { [Op.iLike]: `%${search}%` } },
@@ -61,7 +58,6 @@ const getAllTickets = async (req, res) => {
             where: whereClause,
             include: [
                 { model: User, as: 'creator', attributes: ['id', 'name', 'email'] },
-                { model: User, as: 'assignee', attributes: ['id', 'name', 'email'] }
             ],
             order: [[sort_by, sort_order.toUpperCase()]],
             limit: parseInt(limit),
@@ -69,7 +65,7 @@ const getAllTickets = async (req, res) => {
         });
 
         res.status(200).json({
-            tickets: tickets.rows,
+            tickets,
             pagination: { 
                 total: count,
                 page: parseInt(page),
@@ -89,8 +85,7 @@ const getTicketById = async (req, res) => {
     try {
         const ticket = await Ticket.findByPk(id, {
             include: [
-                { model: User, as: 'creator', attributes: ['id', 'name', 'email'] },
-                { model: User, as: 'assignee', attributes: ['id', 'name', 'email'] }
+                { model: User, as: 'creator', attributes: ['id', 'name', 'email'] }
             ]
         });
 
@@ -105,17 +100,25 @@ const getTicketById = async (req, res) => {
 };
 
 const getMyTickets = async (req, res) => { 
-    const { page = 1, limit = 10, status} = req.query;
+    const { page = 1, limit = 10, status, search} = req.query;
 
     try {
         const offset = (page - 1) * limit;
         const whereClause = { created_by: req.user.userId };
         if (status) whereClause.status = status;
 
+        if (search) {
+            whereClause[Op.or] = [
+                { title: { [Op.iLike]: `%${search}%` } },
+                { description: { [Op.iLike]: `%${search}%` } },
+                { ticket_number: { [Op.iLike]: `%${search}%` } }
+            ];
+        }   
+
         const { count, rows: tickets}  = await Ticket.findAndCountAll({
             where: whereClause,
             include: [
-                { model: User, as: 'assignee', attributes: ['id', 'name', 'email'] }
+                { model: User, as: 'creator', attributes: ['id', 'name', 'email'] }
             ],
             order: [['created_at', 'DESC']],
             limit: parseInt(limit),
@@ -123,7 +126,7 @@ const getMyTickets = async (req, res) => {
         });
 
         res.status(200).json({
-            tickets: tickets.rows,
+            tickets,
             pagination: { 
                 total: count,
                 page: parseInt(page),
@@ -157,8 +160,7 @@ const updateTicket = async (req, res) => {
 
         const updatedTicket = await Ticket.findByPk(id, {
             include: [
-                { model: User, as: 'creator', attributes: ['id', 'name', 'email'] },
-                { model: User, as: 'assignee', attributes: ['id', 'name', 'email'] }
+                { model: User, as: 'creator', attributes: ['id', 'name', 'email'] }
             ]
         });
 

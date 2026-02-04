@@ -10,8 +10,8 @@ router.get('/', authorize('ADMIN'), getAllTickets);
 router.get('/my-tickets', getMyTickets);
 router.get('/:id', getTicketById);
 router.post('/', createTicket);
-router.put('/:id', authorize('ADMIN'), updateTicket);
+router.put('/:id', authorize('ADMIN', 'USER'), updateTicket);
 router.put('/:id/status', authorize('ADMIN'), updateStatus);
-router.delete('/:id', authorize('ADMIN'), deleteTicket);
+router.delete('/:id', authorize('ADMIN', 'USER'), deleteTicket);
 
 module.exports = router;

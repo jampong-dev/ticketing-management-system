@@ -1,7 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import '../assets/styles/Login.css'
 
 function Login() {
+  const navigate = useNavigate()
+  const { login, isAuthenticated } = useAuth()
+  
+  // Navigate when authentication state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/tickets')
+    }
+  }, [isAuthenticated, navigate])
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -33,33 +44,11 @@ function Login() {
     }
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.msg || 'Login failed')
-        setLoading(false)
-        return
-      }
-
+      await login(email, password)
       setSuccess('Login successful! Redirecting...')
-      if (data.token) {
-        localStorage.setItem('token', data.token)
-      }
-      
-      setTimeout(() => {
-        window.location.href = '/dashboard'
-      }, 1500)
-
+      // Navigation happens automatically via useEffect when isAuthenticated becomes true
     } catch (err) {
-      setError('An error occurred. Please try again.')
+      setError(err?.message || 'An error occurred. Please try again.')
       setLoading(false)
     }
   }

@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import '../assets/styles/Register.css'
 
 function Register() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -72,8 +74,8 @@ function Register() {
 
       setSuccess('Registration successful! Redirecting to login...')
       setTimeout(() => {
-        window.location.href = '/login'
-      }, 1500)
+        navigate('/login')
+      }, 1000)
 
     } catch (err) {
       setError('An error occurred. Please try again.')
