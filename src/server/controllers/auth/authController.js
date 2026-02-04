@@ -1,15 +1,10 @@
-const express = require('express');
-const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const Role = require('../models/Role');
-
-// Import middleware
-const { validateRegister, validateLogin } = require('../middleware');
+const User = require('../../models/User');
+const Role = require('../../models/Role');
 
 // Register
-router.post('/register', validateRegister, async (req, res) => {
+const register = async (req, res) => {
   const { name, email, password } = req.body;
   console.log('Register request received:', { name, email });
   try {
@@ -34,10 +29,10 @@ router.post('/register', validateRegister, async (req, res) => {
   } catch (err) {
     res.status(500).json({ msg: 'Server error', error: err.message });
   }
-});
+};
 
 // Login
-router.post('/login', validateLogin, async (req, res) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ where: { email }, include: { model: Role, as: 'role' } });
@@ -52,6 +47,6 @@ router.post('/login', validateLogin, async (req, res) => {
     console.error(err);
     res.status(500).json({ msg: 'Server error' });
   }
-});
+};
 
-module.exports = router;
+module.exports = {register, login};

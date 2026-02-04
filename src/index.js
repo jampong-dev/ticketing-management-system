@@ -14,8 +14,10 @@ app.get('/', (req, res) => {
 
 
 // Routes
-const authRoutes = require('./server/routes/auth');
-app.use('/api/auth', authRoutes);
+const routes = require('./server/routes');
+
+app.use('/api/tickets', routes.ticket);
+app.use('/api/auth', routes.auth);
 
 // Database connection
 // sequelize.authenticate()
