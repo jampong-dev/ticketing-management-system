@@ -1,6 +1,7 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './context/AuthContext'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import ProtectedRoute from './ProtectedRoute'
+import PublicRoute from './PublicRoute'
 import Login from './components/Login'
 import Register from './components/Register'
 import TicketList from './pages/TicketList'
@@ -8,40 +9,9 @@ import CreateTicket from './pages/CreateTicket'
 import TicketDetail from './pages/TicketDetail'
 import Layout from './components/Layout'
 
-// Redirect authenticated users away from login/register
-function PublicRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
-  
-  if (loading) {
-    return <div className="loading-container">Loading...</div>
-  }
-  
-  if (isAuthenticated) {
-    return <Navigate to="/tickets" replace />
-  }
-  
-  return children
-}
-
-// Protect routes that require authentication
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, loading } = useAuth()
-  
-  if (loading) {
-    return <div className="loading-container">Loading...</div>
-  }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-  
-  return children
-}
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
+function AppRoutes() {
+    return (
+        <Routes>
         {/* Public Routes */}
         <Route path="/login" element={
           <PublicRoute>
@@ -81,8 +51,7 @@ function App() {
         {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
-    </BrowserRouter>
-  )
+    )
 }
 
-export default App
+export default AppRoutes

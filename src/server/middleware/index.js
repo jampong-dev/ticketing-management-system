@@ -4,8 +4,8 @@ const { validateRegister, validateLogin } = require('./validateInput');
 const errorHandler = require('./errorHandler');
 
 module.exports = {
-  authMiddleware,
-  authorizeMiddleware,
+  authenticate: authMiddleware,
+  authorize: (...roles) => authorizeMiddleware(roles),
   validateRegister,
   validateLogin,
   errorHandler
